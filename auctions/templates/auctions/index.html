@@ -1,0 +1,31 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{title}}</h2>
+    <div class="column">
+        <div class="row">
+            {% for listing in listings %}
+            <div class="card" style="width: 18rem;">
+                {% if listing.image_url %}
+                    <img src="{{ listing.image_url }}" class="card-img-top" alt="{{ listing.title }}">
+                {% else %}
+                    <img src="https://adishop.az/images/product_empty.png" class="card-img-top" alt="{{ listing.title }}">
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title">{{ listing.title }}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Current price:
+                    {% if listing.listing_bid.all %}
+                        {% with bid=listing.listing_bid.all|dictsort:"bid"|last %}  
+                        {{ bid.bid }}
+                        {% endwith %}
+                    {% else %}
+                        {{ listing.starting_bid }}
+                    {% endif %}</h6>
+                  <p class="card-text">{{ listing.description }}</p>
+                  <a href="{% url 'listing' listing.pk %}" class="btn btn-primary">See details</a>
+                </div>
+              </div>
+        {% endfor %}
+    </div>
+            </div>          
+{% endblock %}

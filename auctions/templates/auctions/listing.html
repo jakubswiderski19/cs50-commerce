@@ -1,0 +1,109 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+        {{ error_message }}
+    </div>
+    {% endif %}
+    <h1 class="text-center">
+        {{ listing.title }}
+    </h1>
+    {% if is_user_author %}
+        <form action="{% url 'close_biding' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="pk_listing" value="{{ listing.pk }}">
+        <button type="submit" class="btn btn-primary">
+            Close biding
+        </button>
+        </form>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <form action="{% url 'watchlist' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="pk_listing" value="{{ listing.pk }}">
+        {% if not request.user in listing.watched_by_users.all %}
+            <button type="submit" class="btn btn-primary">
+                Watchlist
+            </button>
+        {% else %}
+            <button type="submit" class="btn btn-secondary">
+                Not watch anymore
+            </button>
+        {% endif %}
+        </form>
+    {% endif %}
+    <p class="text-secondary text-opacity-50">
+    {% if listing.active %}
+        Listing is active
+    {% else %}
+        Listing is unactive
+    {% endif %}
+    </p>
+    <p class="text-secondary">
+        Created by {{ listing.created_by }}
+    </p>
+    <h2 class="text-center">Descritpion:</h2>
+    <p class="text-center">
+        {{ listing.description }}
+    </p>
+    {% if listing.image_url %}
+        <img src="{{ listing.image_url }}" class="img-thumbnail h-25 w-25 mx-auto d-block" alt="{{ listing.title }}">
+    {% else %}
+        <img src="https://adishop.az/images/product_empty.png" class="img-thumbnail rounded" alt="{{ listing.title }}">
+    {% endif %}
+
+    <p> <h3>Current price:</h3>
+    {% if listing.listing_bid.all %}
+        {% with bid=listing.listing_bid.all|dictsort:"bid"|last %}  
+            {{ bid.bid }} Bidded by {{bid.bid_user}}
+        {% endwith %}
+    {% else %}
+        {{ listing.starting_bid }} Starting price
+    {% endif %}
+    </p>
+
+    {% if user.is_authenticated %}
+    <form action="{% url 'bid' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="pk_listing" value="{{ listing.pk }}">
+        {{ bid_form }}
+        <button type="submit" class="btn btn-primary">
+            Make a bid
+        </button>
+    </form>
+    {% endif %}
+
+    <p><h3>Category:</h3>{% if listing.category %}
+         {{ listing.category }}
+    {% else %}
+         None
+    {% endif %}</p>
+    <h4>
+        Make new comment:
+    </h4>
+
+    {% if user.is_authenticated %}
+    <form action="{% url 'comment' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="pk_listing" value="{{ listing.pk }}">
+        {{ comment_form }}
+        <button type="submit" class="btn btn-primary">
+            Add comment
+        </button>
+    </form>
+    {% endif %}
+
+    <h2>Comments:</h2>
+    <div>
+        {% for comment in listing.listing_comment.all %}
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">{{ comment.comment_user}}</h5>
+                <p class="card-text">{{ comment.comment }}</p>
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+{% endblock %}
